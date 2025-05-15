@@ -110,6 +110,14 @@ def create_products():
 # PLACE YOUR CODE HERE TO READ A PRODUCT
 #
 
+@app.route("/products/<int:product_id>", methods=["GET"])
+def get_products(product_id):
+    product = Product.find(product_id)
+    if not product:
+        return {"message": "Product not found"}, status.HTTP_404_NOT_FOUND
+    product = product.serialize()
+    return product, status.HTTP_200_OK
+
 ######################################################################
 # U P D A T E   A   P R O D U C T
 ######################################################################
@@ -117,6 +125,16 @@ def create_products():
 #
 # PLACE YOUR CODE TO UPDATE A PRODUCT HERE
 #
+
+@app.route("/products/<int:product_id>", methods=["PUT"])
+def update_products(product_id):
+    product = Product.find(product_id)
+    if not product:
+        return {"message": "Product not found"}, status.HTTP_404_NOT_FOUND
+    product.deserialize(request.get_json())
+    product.id = product_id
+    product.update()
+    return product.serialize(), status.HTTP_200_OK
 
 ######################################################################
 # D E L E T E   A   P R O D U C T
@@ -126,3 +144,21 @@ def create_products():
 #
 # PLACE YOUR CODE TO DELETE A PRODUCT HERE
 #
+
+@app.route("/products/<int:product_id>", methods=["DELETE"])
+def delete_products(product_id):
+    product = Product.find(product_id)
+    if product:
+        product.delete()
+
+    return "", status.HTTP_204_NO_CONTENT
+
+@app.route("/products", methods=["GET"])
+def list_products():
+    products = Product.all()
+
+    for product in products:
+        product.serialize()
+
+    app.logger.info("[%s] Products returned", len(products))  
+    return products, status.HTTP_200_OK
