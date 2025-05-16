@@ -102,6 +102,16 @@ def create_products():
 # PLACE YOUR CODE TO LIST ALL PRODUCTS HERE
 #
 
+@app.route("/products", methods=["GET"])
+def list_products():
+    products = Product.all()
+
+    results = [product.serialize() for product in products]
+
+    app.logger.info("[%s] Products returned", len(results))  
+    return results, status.HTTP_200_OK
+
+
 ######################################################################
 # R E A D   A   P R O D U C T
 ######################################################################
@@ -153,12 +163,4 @@ def delete_products(product_id):
 
     return "", status.HTTP_204_NO_CONTENT
 
-@app.route("/products", methods=["GET"])
-def list_products():
-    products = Product.all()
 
-    for product in products:
-        product.serialize()
-
-    app.logger.info("[%s] Products returned", len(products))  
-    return products, status.HTTP_200_OK
