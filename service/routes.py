@@ -105,8 +105,23 @@ def create_products():
 @app.route("/products", methods=["GET"])
 def list_products():
     products = Product.all()
+    products = [product.serialize() for product in products]
+    name = request.args.get("name")
+    category = request.args.get("category")
+    availability = request.args.get("available")
 
-    results = [product.serialize() for product in products]
+    if name:
+        results = [product for product in products if product["name"]==name]
+
+    elif category:
+        results = [product for product in products if product["category"]==category]
+
+    elif availability:
+        availability = availability.lower()
+        results = [product for product in products if str(product["available"]).lower()==availability]
+    
+    else:
+        results = products
 
     app.logger.info("[%s] Products returned", len(results))  
     return results, status.HTTP_200_OK

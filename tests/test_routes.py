@@ -28,7 +28,7 @@ import os
 import logging
 from decimal import Decimal
 from unittest import TestCase
-import quote_plus
+from urllib.parse import quote_plus
 from service import app
 from service.common import status
 from service.models import db, init_db, Product
@@ -215,15 +215,40 @@ class TestProductRoutes(TestCase):
         """It should query by name"""
         products = self._create_products(5)
         test_name = products[0].name
-        name_count = [product for product in products]
-        response = self.client.get(
-            BASE_URL, query_string=f"name={quote_plus(test_name)}"
-            )
+        expected_count = len([p for p in products if p.name == test_name])
+
+        response = self.client.get(BASE_URL, query_string=f"name={quote_plus(test_name)}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         data = response.get_json()
-        self.assertEqual(len(data), product.count(test_name))
+        self.assertEqual(len(data), expected_count)
         for result in data:
             self.assertEqual(result["name"], test_name)
+
+    def test_query_by_category(self):
+        """It should query by category"""
+        products = self._create_products(5)
+        test_category = products[0].category.name
+        expected_count = len([p for p in products if p.category.name == test_category])
+        
+        response = self.client.get(BASE_URL, query_string={"category": test_category})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(len(data), expected_count)
+
+    def test_query_by_availability(self):
+        """It should query by availability"""
+        products = self._create_products(5)
+        test_availability = products[0].available
+        expected_count = len([p for p in products if p.available == test_availability])
+        
+        response = self.client.get(BASE_URL, query_string={"available": test_availability})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.get_json()
+        self.assertEqual(len(data), expected_count)
+
 
 
 
